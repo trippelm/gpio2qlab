@@ -6,6 +6,13 @@ const fs = require("fs/promises");
 const fssync = require("fs");
 const ini = require("ini");
 
+const count = require('./count.json');
+const clicks = count.click;
+
+function saveClicks() {
+	return fs.writeFile("./count.json", JSON.stringify({ clicks }, null, 2));
+}
+
 // Load config
 let config = ini.parse(fssync.readFileSync("./config.ini", "utf-8"));
 
@@ -51,7 +58,7 @@ function updateInfo(parsed, dryRun = false) {
 		let print = "🕹️  " + parsed.host;
 		const PORT = parseInt(config.main.pin, 10) - 1;
 		const gpi = [];
-		let message = '';
+		let message = 'Clicks: ' + clicks;
 
 		if ((Date.now() - lastPress) < (config.main.cue_retrigger_delay*1000)) {
 			let time = config.main.cue_retrigger_delay - Math.round((Date.now() - lastPress) / 1000);
@@ -65,6 +72,8 @@ function updateInfo(parsed, dryRun = false) {
 		if (lastGpi[PORT] != gpi[PORT] && gpi[PORT]) {
 			if (Date.now() - lastPress >= (config.main.cue_retrigger_delay*1000)) {
 				if (!dryRun) {
+					clicks++;
+					saveClicks().catch(() => {});
 					message = "Sending OSC"
 					osc.send({
 						address: `/cue/${config.main.cue}/start`,
