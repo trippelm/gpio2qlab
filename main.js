@@ -7,7 +7,7 @@ const fssync = require("fs");
 const ini = require("ini");
 
 const count = require('./count.json');
-const clicks = count.click;
+let clicks = count.clicks;
 
 function saveClicks() {
 	return fs.writeFile("./count.json", JSON.stringify({ clicks }, null, 2));
